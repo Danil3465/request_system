@@ -34,7 +34,7 @@ class RequestModel(Base):
 	created_at = Column(DateTime, nullable=False, default=func.now())
 	author_id = Column(Integer, ForeignKey("employees.id"))
 	executor_id = Column(Integer, ForeignKey("employees.id")) # Необязательное поле, так как у заявки может не быть назначен исполнитель изначально
-	description = Column(Text)                 # Необязательное поле, так как у заявки может не быть описания изначально
+	description = Column(Text, nullable=False)                 
 	due_date = Column(DateTime, nullable=False)
 	status_id = Column(Integer, ForeignKey("statuses.id"))
 

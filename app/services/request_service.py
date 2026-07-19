@@ -14,3 +14,6 @@ def create_request(db:Session, author_id: int, description: str, due_date: str):
 	db.refresh(new_request)
 	
 	return new_request
+
+def change_status():
+	
