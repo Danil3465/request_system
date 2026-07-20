@@ -6,3 +6,6 @@ class RequestCreateSchema(BaseModel):
 	description: str
 	due_date: date
 
+class RequestStatusUpdateSchema(BaseModel):
+    status_id: int
+

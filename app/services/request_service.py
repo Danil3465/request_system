@@ -15,5 +15,34 @@ def create_request(db:Session, author_id: int, description: str, due_date: str):
 	
 	return new_request
 
-def change_status():
+def change_status(db: Session, request_id: int, new_status_id: int):
+    # проверяем, что статус существует
+    status = db.query(StatusModel).filter(StatusModel.id == new_status_id).first()
+    if not status:
+        raise ValueError("Указанный статус не существует")
+
+    # ищем заявку
+    request = db.query(RequestModel).filter(RequestModel.id == request_id).first()
+    if not request:
+        raise ValueError("Заявка не найдена")
+
+    current_status_id = request.status_id
+
+    if new_status_id == current_status_id:
+        return request
+
+    if current_status_id == 3:
+        raise ValueError("Нельзя изменить статус выполненной заявки")
+
+    if new_status_id < current_status_id:
+        raise ValueError("Нельзя вернуть статус назад")
+
+    if new_status_id > current_status_id + 1:
+        raise ValueError("Нельзя перепрыгивать через статус")
+
+    request.status_id = new_status_id
+    db.commit()
+    db.refresh(request)
+
+    return request
 	
