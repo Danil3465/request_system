@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.services import create_request, change_status
+from app.services import create_request as create_request_service, change_status
 from app.core.database import get_db
 from app.schemas.request import RequestCreateSchema, RequestStatusUpdateSchema
 from app.models import RequestModel, EmployeeModel, StatusModel
@@ -17,11 +17,11 @@ router = APIRouter()
 
 
 @router.post("/requests")
-def create_request(
+def create_request_endpoint(
     request: RequestCreateSchema,
     db: Session = Depends(get_db)
 ):
-    result = create_request(
+    result = create_request_service(
         db,
         request.author_id,
         request.description,

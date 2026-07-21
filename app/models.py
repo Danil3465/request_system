@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Text, String, DateTime, ForeignKey, func, Column
+from sqlalchemy import Integer, Text, String, DateTime, ForeignKey, func, Column, Index
 from sqlalchemy.orm import declarative_base, relationship
 
 
@@ -37,5 +37,15 @@ class RequestModel(Base):
 	description = Column(Text, nullable=False)                 
 	due_date = Column(DateTime, nullable=False)
 	status_id = Column(Integer, ForeignKey("statuses.id"))
+
+	# Добавляем составной индекс для ускорения поиска
+	__table_args__ = (
+		Index("idx_requests_performance", "executor_id", "status_id", "due_date"),
+	)
+
+
+
+
+
 
 

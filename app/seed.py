@@ -27,6 +27,20 @@ def seed_departments(db):
     db.commit()
     print(f"Created {len(departments_names)} departments.")
 
+
+
+def seed_statuses(db):
+    existing = db.query(StatusModel).count()
+    if existing > 0:
+        print("Statuses already exist. Skipping.")
+        return
+
+    statuses_names = ["Новая", "В работе", "Выполнена"]
+    for name in statuses_names:
+        db.add(StatusModel(name=name))
+    db.commit()
+    print(f"Created {len(statuses_names)} statuses.")
+
 def seed_employees(db):
     existing = db.query(EmployeeModel).count()
     if existing > 0:
@@ -99,6 +113,7 @@ if __name__ == "__main__":
     db = SessionLocal()
 
     seed_departments(db)
+    seed_statuses(db)
     seed_employees(db)
     seed_requests(db)
 

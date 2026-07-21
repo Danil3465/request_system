@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система учёта заявок</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #2a2a3a;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+        .logo span {
+            color: #6c63ff;
+        }
+
+        .last-updated {
+            font-size: 13px;
+            color: #6c6c8a;
+            background: #12121c;
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid #1e1e32;
+        }
+
+        .section {
+            background: #12121c;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #1e1e32;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        .section-title small {
+            font-weight: 400;
+            font-size: 14px;
+            color: #6c6c8a;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #aaaacc;
+            margin-bottom: 6px;
+        }
+
+        /* ===== УБИРАЕМ СТРЕЛКИ В INPUT TYPE="NUMBER" ===== */
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: #1a1a2e;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: border 0.2s;
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #6c63ff;
+        }
+        .form-group textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            color: #fff;
+            white-space: nowrap;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: #6c63ff;
+        }
+        .btn-primary:hover {
+            background: #5a52e0;
+        }
+
+        .btn-secondary {
+            background: #2a2a4a;
+        }
+        .btn-secondary:hover {
+            background: #3a3a5a;
+        }
+
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        table th {
+            text-align: left;
+            padding: 12px 12px;
+            color: #6c6c8a;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #1e1e32;
+        }
+        table td {
+            padding: 12px 12px;
+            border-bottom: 1px solid #1a1a2e;
+            vertical-align: middle;
+        }
+        table tr:hover {
+            background: #1a1a2e;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-1 {
+            background: #2a2a6a;
+            color: #7a7aff;
+        }
+        .status-2 {
+            background: #2a4a3a;
+            color: #5adba0;
+        }
+        .status-3 {
+            background: #3a2a4a;
+            color: #b07ad0;
+        }
+        .status-overdue {
+            background: #4a1a1a;
+            color: #ff6b6b;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        .filters .form-group {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 120px;
+        }
+        .filters .form-group:last-child {
+            flex: 0;
+            min-width: auto;
+        }
+
+        .filter-btn-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+        .stat-card {
+            background: #1a1a2e;
+            padding: 16px 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: #6c6c8a;
+        }
+
+        .info-message {
+            text-align: center;
+            padding: 30px 20px;
+            color: #6c6c8a;
+            background: #0d0d18;
+            border-radius: 12px;
+            border: 1px dashed #2a2a4a;
+        }
+
+        /* ===== БЛОК ПОИСКА ПО ID ===== */
+        .search-by-id {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .search-by-id .form-group {
+            margin-bottom: 0;
+            flex: 0 1 250px;
+        }
+        .search-by-id .form-group:last-child {
+            flex: 0;
+        }
+
+        .request-card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            border: 1px solid #2a2a4a;
+            display: none;
+        }
+        .request-card.visible {
+            display: block;
+        }
+        .request-card .field {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        .request-card .field:last-child {
+            border-bottom: none;
+        }
+        .request-card .label {
+            color: #6c6c8a;
+            font-weight: 500;
+        }
+        .request-card .value {
+            color: #e0e0e0;
+        }
+
+        .request-card .status-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #2a2a4a;
+            flex-wrap: wrap;
+        }
+        .request-card .status-control select {
+            background: #0d0d18;
+            border: 1px solid #2a2a4a;
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+            min-width: 130px;
+        }
+        .request-card .status-control select:focus {
+            border-color: #6c63ff;
+        }
+        .request-card .status-control .status-message {
+            font-size: 13px;
+            color: #ff6b6b;
+            margin-left: 8px;
+        }
+        .request-card .status-control .status-message.success {
+            color: #2ed573;
+        }
+        .request-card .status-control .status-message.info {
+            color: #6c6c8a;
+        }
+
+        .not-found {
+            color: #ff6b6b;
+            margin-top: 12px;
+            display: none;
+        }
+        .not-found.visible {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .filters {
+                flex-direction: column;
+            }
+            .filter-btn-group {
+                flex-wrap: wrap;
+            }
+            .search-by-id {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-by-id .form-group {
+                flex: auto;
+            }
+            .request-card .field {
+                flex-direction: column;
+                gap: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                📋 <span>Заявки</span> Pro
+            </div>
+            <div class="last-updated">
+                🟢 Обновлено: <span id="lastUpdated">--:--</span>
+            </div>
+        </header>
+
+        <div class="grid-2">
+            <div>
+                <div class="section">
+                    <div class="section-title">Новая заявка</div>
+                    <form id="createForm">
+                        <div class="form-group">
+                            <label for="authorId">ID автора</label>
+                            <input type="number" id="authorId" placeholder="Например: 1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Описание</label>
+                            <textarea id="description" placeholder="Краткое описание задачи..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="dueDate">Срок выполнения</label>
+                            <input type="date" id="dueDate" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Создать заявку</button>
+                    </form>
+                    <div id="createMessage" style="margin-top: 12px; font-size: 14px; color: #6c6c8a;"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section">
+                    <div class="section-title">Статистика</div>
+                    <div id="reportContent">
+                        <div class="report-stats" id="reportStats">
+                            <div class="stat-card">
+                                <div class="number" id="statNew">0</div>
+                                <div class="label">Новые</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="number" id="statInProgress">0</div>
+                                <div class="label">В работе</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="number" id="statDone">0</div>
+                                <div class="label">Выполнены</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="number" id="statOverdue">0</div>
+                                <div class="label">Просрочено</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <h4 style="color: #aaaacc; font-size: 14px; font-weight: 500; margin-bottom: 8px;">По исполнителям (топ-5)</h4>
+                            <div id="executorReport" style="font-size: 14px; color: #aaaacc;">
+                                <span style="color: #6c6c8a;">Загружается...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" id="refreshReportBtn" style="margin-top: 16px;">Обновить статистику</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== БЛОК ПОИСКА ПО ID ===== -->
+        <div class="section">
+            <div class="section-title">Поиск заявки по ID</div>
+            <div class="search-by-id">
+                <div class="form-group">
+                    <label for="searchRequestId">ID заявки</label>
+                    <input type="number" id="searchRequestId" placeholder="Введите ID заявки" min="1">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" id="searchRequestBtn">Найти</button>
+                </div>
+            </div>
+
+            <div id="notFound" class="not-found">Заявка не найдена</div>
+
+            <div id="requestCard" class="request-card">
+                <div class="field">
+                    <span class="label">ID</span>
+                    <span class="value" id="cardId">—</span>
+                </div>
+                <div class="field">
+                    <span class="label">Описание</span>
+                    <span class="value" id="cardDescription">—</span>
+                </div>
+                <div class="field">
+                    <span class="label">Автор</span>
+                    <span class="value" id="cardAuthor">—</span>
+                </div>
+                <div class="field">
+                    <span class="label">Исполнитель</span>
+                    <span class="value" id="cardExecutor">—</span>
+                </div>
+                <div class="field">
+                    <span class="label">Срок выполнения</span>
+                    <span class="value" id="cardDueDate">—</span>
+                </div>
+                <div class="field">
+                    <span class="label">Дата создания</span>
+                    <span class="value" id="cardCreatedAt">—</span>
+                </div>
+                <div class="field">
+                    <span class="label">Текущий статус</span>
+                    <span class="value" id="cardStatus">—</span>
+                </div>
+
+                <div class="status-control">
+                    <span style="color: #6c6c8a; font-size: 14px;">Изменить статус:</span>
+                    <select id="cardStatusSelect">
+                        <option value="1">Новая</option>
+                        <option value="2">В работе</option>
+                        <option value="3">Выполнена</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" id="cardChangeStatusBtn">Применить</button>
+                    <span id="cardStatusMessage" class="status-message"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== СПИСОК ЗАЯВОК ===== -->
+        <div class="section">
+            <div class="section-title">Список заявок <small>— фильтруйте, чтобы загрузить</small></div>
+            <div class="filters">
+                <div class="form-group">
+                    <label for="filterStatus">Статус</label>
+                    <select id="filterStatus">
+                        <option value="">Все</option>
+                        <option value="1">Новая</option>
+                        <option value="2">В работе</option>
+                        <option value="3">Выполнена</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filterExecutor">Исполнитель (ID)</label>
+                    <input type="number" id="filterExecutor" placeholder="ID исполнителя">
+                </div>
+                <div class="form-group">
+                    <label for="filterDepartment">Подразделение (ID)</label>
+                    <input type="number" id="filterDepartment" placeholder="ID отдела">
+                </div>
+                <div class="form-group">
+                    <label for="filterOverdue">Просрочка</label>
+                    <select id="filterOverdue">
+                        <option value="">Все</option>
+                        <option value="true">Только просроченные</option>
+                    </select>
+                </div>
+                <div class="form-group filter-btn-group">
+                    <button class="btn btn-primary" id="refreshListBtn">Применить фильтры</button>
+                    <button class="btn btn-secondary" id="resetFiltersBtn">Сбросить</button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Описание</th>
+                            <th>Автор</th>
+                            <th>Исполнитель</th>
+                            <th>Срок</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // ===== DOM =====
+        const createForm = document.getElementById('createForm');
+        const createMessage = document.getElementById('createMessage');
+        const requestsTableBody = document.getElementById('requestsTableBody');
+        const refreshListBtn = document.getElementById('refreshListBtn');
+        const refreshReportBtn = document.getElementById('refreshReportBtn');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+        const filterStatus = document.getElementById('filterStatus');
+        const filterExecutor = document.getElementById('filterExecutor');
+        const filterDepartment = document.getElementById('filterDepartment');
+        const filterOverdue = document.getElementById('filterOverdue');
+
+        const statNew = document.getElementById('statNew');
+        const statInProgress = document.getElementById('statInProgress');
+        const statDone = document.getElementById('statDone');
+        const statOverdue = document.getElementById('statOverdue');
+        const executorReport = document.getElementById('executorReport');
+        const lastUpdated = document.getElementById('lastUpdated');
+
+        // ===== БЛОК ПОИСКА =====
+        const searchRequestId = document.getElementById('searchRequestId');
+        const searchRequestBtn = document.getElementById('searchRequestBtn');
+        const notFound = document.getElementById('notFound');
+        const requestCard = document.getElementById('requestCard');
+
+        const cardId = document.getElementById('cardId');
+        const cardDescription = document.getElementById('cardDescription');
+        const cardAuthor = document.getElementById('cardAuthor');
+        const cardExecutor = document.getElementById('cardExecutor');
+        const cardDueDate = document.getElementById('cardDueDate');
+        const cardCreatedAt = document.getElementById('cardCreatedAt');
+        const cardStatus = document.getElementById('cardStatus');
+        const cardStatusSelect = document.getElementById('cardStatusSelect');
+        const cardChangeStatusBtn = document.getElementById('cardChangeStatusBtn');
+        const cardStatusMessage = document.getElementById('cardStatusMessage');
+
+        // ===== ВСПОМОГАТЕЛЬНЫЕ =====
+        function getStatusName(id) {
+            const map = { 1: 'Новая', 2: 'В работе', 3: 'Выполнена' };
+            return map[id] || id;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('ru-RU');
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleString('ru-RU');
+        }
+
+        function showCardMessage(msg, type) {
+            cardStatusMessage.textContent = msg;
+            cardStatusMessage.className = 'status-message ' + (type || '');
+        }
+
+        // ===== ПОИСК ЗАЯВКИ =====
+        async function searchRequest() {
+            const requestId = parseInt(searchRequestId.value);
+            if (!requestId || requestId < 1) {
+                notFound.classList.remove('visible');
+                requestCard.classList.remove('visible');
+                showCardMessage('', '');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/requests/${requestId}`);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        notFound.classList.add('visible');
+                        requestCard.classList.remove('visible');
+                        showCardMessage('', '');
+                        return;
+                    }
+                    throw new Error('Ошибка загрузки');
+                }
+
+                const req = await response.json();
+                notFound.classList.remove('visible');
+
+                cardId.textContent = req.id;
+                cardDescription.textContent = req.description || '—';
+                cardAuthor.textContent = req.author_id || '—';
+                cardExecutor.textContent = req.executor_id || '—';
+                cardDueDate.textContent = formatDate(req.due_date);
+                cardCreatedAt.textContent = formatDateTime(req.created_at);
+                cardStatus.textContent = getStatusName(req.status_id);
+
+                cardStatusSelect.value = req.status_id;
+
+                requestCard.classList.add('visible');
+                showCardMessage('', '');
+
+            } catch (error) {
+                console.error('Ошибка поиска:', error);
+                notFound.classList.add('visible');
+                requestCard.classList.remove('visible');
+                showCardMessage('', '');
+            }
+        }
+
+        // ===== ИЗМЕНЕНИЕ СТАТУСА В КАРТОЧКЕ =====
+        async function changeCardStatus() {
+            const requestId = parseInt(searchRequestId.value);
+            const newStatusId = parseInt(cardStatusSelect.value);
+
+            if (!requestId || requestId < 1) {
+                showCardMessage('Сначала найдите заявку', 'error');
+                return;
+            }
+
+            try {
+                const checkResp = await fetch(`${API_BASE}/requests/${requestId}`);
+                if (!checkResp.ok) {
+                    if (checkResp.status === 404) {
+                        showCardMessage('Заявка не найдена', 'error');
+                        requestCard.classList.remove('visible');
+                        return;
+                    }
+                    throw new Error('Ошибка проверки статуса');
+                }
+                const current = await checkResp.json();
+
+                if (newStatusId === current.status_id) {
+                    showCardMessage('Заявка уже в этом статусе', 'info');
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/requests/${requestId}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status_id: newStatusId })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Не удалось изменить статус');
+                }
+
+                const result = await response.json();
+                showCardMessage(`Статус изменён на «${getStatusName(result.status_id)}»`, 'success');
+
+                await searchRequest();
+
+            } catch (error) {
+                let msg = error.message;
+                if (error.message.includes('перепрыгивать')) msg = 'Переход через статус запрещён';
+                else if (error.message.includes('вернуть')) msg = 'Откат статуса невозможен';
+                else if (error.message.includes('выполненной')) msg = 'Заявка уже выполнена';
+                showCardMessage(msg, 'error');
+            }
+        }
+
+        searchRequestBtn.addEventListener('click', searchRequest);
+        searchRequestId.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') searchRequest();
+        });
+
+        cardChangeStatusBtn.addEventListener('click', changeCardStatus);
+
+        // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+        function updateTimestamp() {
+            const now = new Date();
+            lastUpdated.textContent = now.toLocaleTimeString();
+        }
+
+        function showEmptyState() {
+            requestsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="info-message" style="padding: 40px 20px; text-align: center; background: transparent; border: none; color: #6c6c8a;">
+                        <div style="font-size: 16px; font-weight: 500;">Примените фильтры</div>
+                        <div style="font-size: 14px; margin-top: 8px;">Выберите параметры выше и нажмите «Применить фильтры», чтобы загрузить заявки.</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function fetchRequests() {
+            const params = new URLSearchParams();
+            if (filterStatus.value) params.append('status_id', filterStatus.value);
+            if (filterExecutor.value) params.append('executor_id', filterExecutor.value);
+            if (filterDepartment.value) params.append('department_id', filterDepartment.value);
+            if (filterOverdue.value === 'true') params.append('overdue', 'true');
+
+            if ([...params.keys()].length === 0) {
+                showEmptyState();
+                return null;
+            }
+
+            const url = `${API_BASE}/requests?${params.toString()}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Ошибка загрузки заявок');
+            return await response.json();
+        }
+
+        function renderRequests(requests) {
+            if (!requests || requests.length === 0) {
+                requestsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px; color: #6c6c8a;">
+                            По выбранным фильтрам заявок не найдено.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            requestsTableBody.innerHTML = requests.map(req => `
+                <tr>
+                    <td><strong>#${req.id}</strong></td>
+                    <td>${req.description || '—'}</td>
+                    <td>${req.author_id || '—'}</td>
+                    <td>${req.executor_id || '—'}</td>
+                    <td>${req.due_date ? new Date(req.due_date).toLocaleDateString() : '—'}</td>
+                    <td>
+                        <span class="status-badge status-${req.status_id}">
+                            ${getStatusName(req.status_id)}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchReport() {
+            const response = await fetch(`${API_BASE}/requests/report`);
+            if (!response.ok) throw new Error('Ошибка загрузки отчёта');
+            return await response.json();
+        }
+
+        function renderReport(report) {
+            if (!report) return;
+
+            const statusMap = {};
+            report.status_report.forEach(item => {
+                statusMap[item.status] = item.count;
+            });
+            statNew.textContent = statusMap['Новая'] || 0;
+            statInProgress.textContent = statusMap['В работе'] || 0;
+            statDone.textContent = statusMap['Выполнена'] || 0;
+            statOverdue.textContent = report.overdue_count || 0;
+
+            if (report.executor_report && report.executor_report.length > 0) {
+                const top = report.executor_report.slice(0, 5);
+                executorReport.innerHTML = top.map(item =>
+                    `<div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #1a1a2e;">
+                        <span>${item.executor}</span>
+                        <span style="color: #6c63ff; font-weight: 600;">${item.count}</span>
+                    </div>`
+                ).join('');
+            } else {
+                executorReport.innerHTML = '<span style="color: #6c6c8a;">Нет данных</span>';
+            }
+        }
+
+        async function loadData() {
+            try {
+                updateTimestamp();
+                const [requests, report] = await Promise.all([fetchRequests(), fetchReport()]);
+                if (requests !== null) {
+                    renderRequests(requests);
+                }
+                renderReport(report);
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                if (requestsTableBody) {
+                    requestsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #ff6b6b;">
+                                ❌ Ошибка загрузки: ${error.message}
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+
+        // ===== ОБРАБОТЧИКИ =====
+        createForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const authorId = document.getElementById('authorId').value;
+            const description = document.getElementById('description').value;
+            const dueDate = document.getElementById('dueDate').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/requests`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        author_id: parseInt(authorId),
+                        description: description,
+                        due_date: dueDate
+                    })
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка создания');
+                }
+                const result = await response.json();
+                createMessage.innerHTML = `✅ Заявка #${result.id} создана!`;
+                createMessage.style.color = '#2ed573';
+                createForm.reset();
+                await loadData();
+            } catch (error) {
+                createMessage.innerHTML = `❌ ${error.message}`;
+                createMessage.style.color = '#ff6b6b';
+            }
+        });
+
+        refreshListBtn.addEventListener('click', loadData);
+        resetFiltersBtn.addEventListener('click', () => {
+            filterStatus.value = '';
+            filterExecutor.value = '';
+            filterDepartment.value = '';
+            filterOverdue.value = '';
+            showEmptyState();
+        });
+        refreshReportBtn.addEventListener('click', loadData);
+
+        showEmptyState();
+        loadData();
+    </script>
+</body>
+</html>
